@@ -15,114 +15,136 @@ const scanner = new Html5QrcodeScanner(
 false
 );
 
-scanner.render(async (decodedText) => {
-  if (isProcessing) return;
 
-  setIsProcessing(true);
+scanner.render(
+  async (decodedText) => {
+    if (isProcessing) return;
 
-  try {
-    const url = new URL(decodedText);
-    const memberNo = Number(url.pathname.split("/").pop());
+    setIsProcessing(true);
 
-    if (!memberNo) {
-      setMessage("❌ Invalid QR");
-      return;
-    }
+    try {
+      const url = new URL(decodedText);
+      const memberNo = Number(
+        url.pathname.split("/").pop()
+      );
 
-    // 1日1回チェック
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+      if (!memberNo) {
+        setMessage("❌ Invalid QR");
+        return;
+      }
 
-    const { data: existingScan } = await supabase
-      .from("scan_logs")
-      .select("*")
-      .eq("member_no", memberNo)
-      .gte("created_at", today.toISOString());
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-    if (existingScan && existingScan.length > 0) {
-      setMessage("⚠️ Already scanned today");
-      return;
-    }
+      const { data: existingScan } = await supabase
+        .from("scan_logs")
+        .select("*")
+        .eq("member_no", memberNo)
+        .gte("created_at", today.toISOString());
 
-    // 顧客取得
-    const { data: customer, error } = await supabase
-      .from("customers")
-      .select("*")
-      .eq("member_no", memberNo)
-      .single();
+      if (
+        existingScan &&
+        existingScan.length > 0
+      ) {
+        setMessage("⚠️ Already scanned today");
+        return;
+      }
 
-    if (error || !customer) {
-      setMessage("❌ Member not found");
-      return;
-    }
+      const {
+        data: customer,
+        error,
+      } = await supabase
+        .from("customers")
+        .select("*")
+        .eq("member_no", memberNo)
+        .single();
 
-    // ポイント加算
-    const currentPoints = customer.points || 0;
-    const newPoints = currentPoints + 10;
+      if (error || !customer) {
+        setMessage("❌ Member not found");
+        return;
+      }
 
-    await supabase
-      .from("customers")
-      .update({ points: newPoints })
-      .eq("member_no", memberNo);
+      const currentPoints =
+        customer.points || 0;
 
-    // scan履歴保存
-    const { error: logError } = await supabase
-  .from("scan_logs")
-  .insert([
-    {
-      member_no: memberNo,
-      points_added: 10,
-    },
-  ]);
+      const newPoints =
+        currentPoints + 10;
 
-if (logError) {
-  setMessage(`LOG ERROR: ${logError.message}`);
-  return;
-}
-
-    // 100ポイントごとにクーポン発行
-    if (newPoints % 100 === 0) {
       await supabase
-        .from("coupons")
-        .insert([
-          {
-            member_no: memberNo,
-            used: false,
-          },
-        ]);
+        .from("customers")
+        .update({
+          points: newPoints,
+        })
+        .eq("member_no", memberNo);
 
-      setMessage(
-        `🎉 Coupon Issued! Current Points: ${newPoints}`
-      );
-    } else {
-      setMessage(
-        `✅ +10 Points Added! Current Points: ${newPoints}`
-      );
+      const { error: logError } =
+        await supabase
+          .from("scan_logs")
+          .insert([
+            {
+              member_no: memberNo,
+              points_added: 10,
+            },
+          ]);
+
+      if (logError) {
+        setMessage(
+          `LOG ERROR: ${logError.message}`
+        );
+        return;
+      }
+
+      if (newPoints % 100 === 0) {
+        await supabase
+          .from("coupons")
+          .insert([
+            {
+              member_no: memberNo,
+              used: false,
+            },
+          ]);
+
+        setMessage(
+          `🎉 Coupon Issued! Current Points: ${newPoints}`
+        );
+      } else {
+        setMessage(
+          `✅ +10 Points Added! Current Points: ${newPoints}`
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      setMessage("❌ Scan Error");
     }
-  } catch (err) {
-    console.error(err);
-    setMessage("❌ Scan Error");
-  }
 
-  setTimeout(() => {
-    setIsProcessing(false);
-  }, 3000);
-});
+    setTimeout(() => {
+      setIsProcessing(false);
+    }, 3000);
+  },
+  (error) => {
+    console.log(
+      "scan error:",
+      error
+    );
+  }
+);
 
 return () => {
   scanner.clear().catch(() => {});
 };
 
+
 }, [isProcessing]);
 
 return (
-<div style={{ padding: 20 }}>
-QR Scan
+<div style={{ padding: 20 }}> <h1>QR Scan</h1>
+
 
   <div id="reader"></div>
 
   <h2>{message}</h2>
 </div>
+
 
 );
 }
