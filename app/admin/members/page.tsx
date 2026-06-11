@@ -6,6 +6,7 @@ import Link from "next/link";
 
 export default function MembersPage() {
 const [members, setMembers] = useState<any[]>([]);
+const [searchTerm, setSearchTerm] = useState("");
 
 useEffect(() => {
 loadMembers();
@@ -52,7 +53,18 @@ const { error: updateError } =
 
 if (updateError) {
   alert("Update Error");
-  return;
+const filteredMembers = members.filter(
+  (member) =>
+    member.member_no
+      ?.toString()
+      .includes(searchTerm) ||
+    member.name
+      ?.toLowerCase()
+      .includes(searchTerm.toLowerCase()) ||
+    member.email
+      ?.toLowerCase()
+      .includes(searchTerm.toLowerCase())
+);  return;
 }
 
 if (newPoints >= 500) {
@@ -109,7 +121,22 @@ alert(
 
 return (
 <div style={{ padding: 20 }}> <h1>Member List</h1>
-
+<div style={{ marginBottom: "20px" }}>
+  <input
+    type="text"
+    placeholder="Search Member No / Name / Email"
+    value={searchTerm}
+    onChange={(e) =>
+      setSearchTerm(e.target.value)
+    }
+    style={{
+      padding: "10px",
+      width: "300px",
+      border: "1px solid #ccc",
+      borderRadius: "6px",
+    }}
+  />
+</div>
 
   <table
     border={1}
@@ -131,7 +158,7 @@ return (
     </thead>
 
     <tbody>
-      {members.map((member) => (
+      {filteredMembers.map((member) => (
         <tr key={member.id}>
           <td>{member.member_no}</td>
           <td>{member.name}</td>
