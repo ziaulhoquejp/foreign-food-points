@@ -8,6 +8,9 @@ export default function HomePage() {
 const [memberCount, setMemberCount] = useState(0);
 const [couponCount, setCouponCount] = useState(0);
 const [scanCount, setScanCount] = useState(0);
+const [totalPoints, setTotalPoints] = useState(0);
+const [unusedCoupons, setUnusedCoupons] = useState(0);
+const [todayScans, setTodayScans] = useState(0);
 
 useEffect(() => {
 loadStats();
@@ -27,6 +30,35 @@ const { count: scans } = await supabase
   .from("scan_logs")
   .select("*", { count: "exact", head: true });
 
+// Total Points
+const { data: pointsData } = await supabase
+  .from("customers")
+  .select("points");
+
+// Unused Coupons
+const { count: unused } = await supabase
+  .from("coupons")
+  .select("*", { count: "exact", head: true })
+  .eq("used", false);
+
+// Today's Scans
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const { count: todayCount } = await supabase
+  .from("scan_logs")
+  .select("*", { count: "exact", head: true })
+  .gte("created_at", today.toISOString());
+
+const total =
+  pointsData?.reduce(
+    (sum, row) => sum + (row.points || 0),
+    0
+  ) || 0;
+
+setTotalPoints(total);
+setUnusedCoupons(unused || 0);
+setTodayScans(todayCount || 0);
 setMemberCount(members || 0);
 setCouponCount(coupons || 0);
 setScanCount(scans || 0);
@@ -72,6 +104,20 @@ background: "#f5f7fa",
       <h3>📊 Scan Records</h3>
       <h1>{scanCount}</h1>
     </div>
+    <div style={statsCard}>
+  <h3>⭐ Total Points</h3>
+  <h1>{totalPoints}</h1>
+</div>
+
+<div style={statsCard}>
+  <h3>🎫 Unused Coupons</h3>
+  <h1>{unusedCoupons}</h1>
+</div>
+
+<div style={statsCard}>
+  <h3>🔥 Today's Scans</h3>
+  <h1>{todayScans}</h1>
+</div>
   </div>
 
   <div
