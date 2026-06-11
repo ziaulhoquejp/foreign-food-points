@@ -11,6 +11,7 @@ const [scanCount, setScanCount] = useState(0);
 const [totalPoints, setTotalPoints] = useState(0);
 const [unusedCoupons, setUnusedCoupons] = useState(0);
 const [todayScans, setTodayScans] = useState(0);
+const [recentLogs, setRecentLogs] = useState<any[]>([]);
 
 useEffect(() => {
 loadStats();
@@ -62,6 +63,13 @@ setTodayScans(todayCount || 0);
 setMemberCount(members || 0);
 setCouponCount(coupons || 0);
 setScanCount(scans || 0);
+const { data: recent } = await supabase
+  .from("scan_logs")
+  .select("*")
+  .order("created_at", { ascending: false })
+  .limit(5);
+
+setRecentLogs(recent || []);
 
 
 };
@@ -164,7 +172,32 @@ background: "#f5f7fa",
       background: "white",
       borderRadius: "12px",
     }}
-  >
+  ><div
+  style={{
+    marginTop: "40px",
+    padding: "20px",
+    background: "white",
+    borderRadius: "12px",
+  }}
+>
+  <h3>📋 Recent Activity</h3>
+
+  {recentLogs.length === 0 ? (
+    <p>No activity found</p>
+  ) : (
+    recentLogs.map((log) => (
+      <div
+        key={log.id}
+        style={{
+          padding: "10px",
+          borderBottom: "1px solid #eee",
+        }}
+      >
+        Member {log.member_no} +{log.points_added} points
+      </div>
+    ))
+  )}
+</div>
     <h3>System Overview</h3>
 
     <ul>
