@@ -115,7 +115,48 @@ alert(
   "Coupon Issued for Member " +
     memberNo
 );
+const exportCSV = () => {
+  const headers = [
+    "Member No",
+    "Name",
+    "Email",
+    "Points",
+  ];
 
+  const rows = members.map((m) => [
+    m.member_no,
+    m.name,
+    m.email,
+    m.points,
+  ]);
+
+  const csvContent = [
+    headers,
+    ...rows,
+  ]
+    .map((row) => row.join(","))
+    .join("\n");
+
+  const blob = new Blob(
+    [csvContent],
+    {
+      type: "text/csv;charset=utf-8;",
+    }
+  );
+
+  const link =
+    document.createElement("a");
+
+  const url =
+    URL.createObjectURL(blob);
+
+  link.href = url;
+  link.download = "members.csv";
+
+  link.click();
+
+  URL.revokeObjectURL(url);
+};
 
 };
 
@@ -137,6 +178,20 @@ return (
     }}
   />
 </div>
+<button
+  onClick={exportCSV}
+  style={{
+    padding: "10px 15px",
+    background: "#16a34a",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    marginBottom: "20px",
+  }}
+>
+  📥 Export CSV
+</button>
 
   <table
     border={1}
