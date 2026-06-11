@@ -24,11 +24,8 @@ setMembers(data || []);
 
 };
 
-const addPoints = async (
-memberNo: number
-) => {
-const { data: customer } =
-await supabase
+const addPoints = async (memberNo: number) => {
+const { data: customer } = await supabase
 .from("customers")
 .select("*")
 .eq("member_no", memberNo)
@@ -40,31 +37,18 @@ if (!customer) {
   return;
 }
 
-const newPoints =
-  (customer.points || 0) + 10;
+const newPoints = (customer.points || 0) + 10;
 
-const { error: updateError } =
-  await supabase
-    .from("customers")
-    .update({
-      points: newPoints,
-    })
-    .eq("member_no", memberNo);
+const { error: updateError } = await supabase
+  .from("customers")
+  .update({
+    points: newPoints,
+  })
+  .eq("member_no", memberNo);
 
 if (updateError) {
   alert("Update Error");
-const filteredMembers = members.filter(
-  (member) =>
-    member.member_no
-      ?.toString()
-      .includes(searchTerm) ||
-    member.name
-      ?.toLowerCase()
-      .includes(searchTerm.toLowerCase()) ||
-    member.email
-      ?.toLowerCase()
-      .includes(searchTerm.toLowerCase())
-);  return;
+  return;
 }
 
 if (newPoints >= 500) {
@@ -77,14 +61,9 @@ if (newPoints >= 500) {
       },
     ]);
 
-  alert(
-    "🎉 500 Points Reached! Coupon Issued!"
-  );
+  alert("🎉 500 Points Reached! Coupon Issued!");
 } else {
-  alert(
-    "Points Added. Total: " +
-      newPoints
-  );
+  alert("Points Added. Total: " + newPoints);
 }
 
 await loadMembers();
@@ -92,9 +71,7 @@ await loadMembers();
 
 };
 
-const issueCoupon = async (
-memberNo: number
-) => {
+const issueCoupon = async (memberNo: number) => {
 const { error } = await supabase
 .from("coupons")
 .insert([
@@ -111,87 +88,102 @@ if (error) {
   return;
 }
 
-alert(
-  "Coupon Issued for Member " +
-    memberNo
-);
-const exportCSV = () => {
-  const headers = [
-    "Member No",
-    "Name",
-    "Email",
-    "Points",
-  ];
+alert("Coupon Issued for Member " + memberNo);
 
-  const rows = members.map((m) => [
-    m.member_no,
-    m.name,
-    m.email,
-    m.points,
-  ]);
 
-  const csvContent = [
-    headers,
-    ...rows,
-  ]
-    .map((row) => row.join(","))
-    .join("\n");
-
-  const blob = new Blob(
-    [csvContent],
-    {
-      type: "text/csv;charset=utf-8;",
-    }
-  );
-
-  const link =
-    document.createElement("a");
-
-  const url =
-    URL.createObjectURL(blob);
-
-  link.href = url;
-  link.download = "members.csv";
-
-  link.click();
-
-  URL.revokeObjectURL(url);
 };
+
+const filteredMembers = members.filter(
+(member) =>
+member.member_no
+?.toString()
+.includes(searchTerm) ||
+member.name
+?.toLowerCase()
+.includes(searchTerm.toLowerCase()) ||
+member.email
+?.toLowerCase()
+.includes(searchTerm.toLowerCase())
+);
+
+const exportCSV = () => {
+const headers = [
+"Member No",
+"Name",
+"Email",
+"Points",
+];
+
+
+const rows = members.map((m) => [
+  m.member_no,
+  m.name,
+  m.email,
+  m.points,
+]);
+
+const csvContent = [headers, ...rows]
+  .map((row) => row.join(","))
+  .join("\n");
+
+const blob = new Blob(
+  [csvContent],
+  {
+    type: "text/csv;charset=utf-8;",
+  }
+);
+
+const link =
+  document.createElement("a");
+
+const url =
+  URL.createObjectURL(blob);
+
+link.href = url;
+link.download = "members.csv";
+
+link.click();
+
+URL.revokeObjectURL(url);
+
 
 };
 
 return (
 <div style={{ padding: 20 }}> <h1>Member List</h1>
-<div style={{ marginBottom: "20px" }}>
-  <input
-    type="text"
-    placeholder="Search Member No / Name / Email"
-    value={searchTerm}
-    onChange={(e) =>
-      setSearchTerm(e.target.value)
-    }
+
+
+  <div style={{ marginBottom: "20px" }}>
+    <input
+      type="text"
+      placeholder="Search Member No / Name / Email"
+      value={searchTerm}
+      onChange={(e) =>
+        setSearchTerm(e.target.value)
+      }
+      style={{
+        padding: "10px",
+        width: "300px",
+        border: "1px solid #ccc",
+        borderRadius: "6px",
+      }}
+    />
+  </div>
+
+  <button
+    onClick={exportCSV}
     style={{
-      padding: "10px",
-      width: "300px",
-      border: "1px solid #ccc",
+      padding: "10px 15px",
+      background: "#16a34a",
+      color: "white",
+      border: "none",
       borderRadius: "6px",
+      cursor: "pointer",
+      marginBottom: "20px",
     }}
-  />
-</div>
-<button
-  onClick={exportCSV}
-  style={{
-    padding: "10px 15px",
-    background: "#16a34a",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    marginBottom: "20px",
-  }}
->
-  📥 Export CSV
-</button>
+  >
+    📥 Export CSV
+  </button>
 
   <table
     border={1}
