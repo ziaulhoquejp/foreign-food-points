@@ -3,6 +3,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 export default function HomePage() {
 const [memberCount, setMemberCount] = useState(0);
@@ -73,6 +81,15 @@ setRecentLogs(recent || []);
 
 
 };
+const chartData = [
+  { day: "Mon", scans: 12 },
+  { day: "Tue", scans: 18 },
+  { day: "Wed", scans: 8 },
+  { day: "Thu", scans: 20 },
+  { day: "Fri", scans: 15 },
+  { day: "Sat", scans: 25 },
+  { day: "Sun", scans: 10 },
+];
 
 return (
 <div
@@ -197,6 +214,30 @@ background: "#f5f7fa",
       </div>
     ))
   )}
+</div>
+<div
+  style={{
+    marginTop: "40px",
+    background: "white",
+    padding: "20px",
+    borderRadius: "12px",
+  }}
+>
+  <h2>📈 Weekly Scan Activity</h2>
+
+  <div style={{ width: "100%", height: 300 }}>
+    <ResponsiveContainer>
+      <LineChart data={chartData}>
+        <XAxis dataKey="day" />
+        <YAxis />
+        <Tooltip />
+        <Line
+          type="monotone"
+          dataKey="scans"
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  </div>
 </div>
     <h3>System Overview</h3>
 
