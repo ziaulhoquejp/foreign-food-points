@@ -1,5 +1,7 @@
 "use client";
 
+"use client";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -13,6 +15,28 @@ import {
 } from "recharts";
 
 export default function HomePage() {
+  const [language, setLanguage] =
+  useState<"en" | "ja" | "bn" | "np">("en");
+
+  const translations = {
+    en: {
+      title: "Foreign Food Points System",
+      subtitle: "QR-Based Customer Loyalty Platform",
+    },
+    ja: {
+      title: "外国人向けポイントシステム",
+      subtitle: "QR会員ポイント管理プラットフォーム",
+    },
+    bn: {
+      title: "বিদেশি খাদ্য পয়েন্ট সিস্টেম",
+      subtitle: "QR ভিত্তিক কাস্টমার লয়্যালটি প্ল্যাটফর্ম",
+    },
+    np: {
+      title: "विदेशी फूड पोइन्ट प्रणाली",
+      subtitle: "QR आधारित ग्राहक लोयल्टी प्लेटफर्म",
+    },
+  };
+
 const [memberCount, setMemberCount] = useState(0);
 const [couponCount, setCouponCount] = useState(0);
 const [scanCount, setScanCount] = useState(0);
@@ -99,12 +123,25 @@ padding: "40px",
 background: "#f5f7fa",
 }}
 >
+  <select
+  value={language}
+  onChange={(e) =>
+  setLanguage(
+    e.target.value as "en" | "ja" | "bn" | "np"
+  )
+}
+>
+  <option value="en">🇺🇸 English</option>
+  <option value="ja">🇯🇵 Japanese</option>
+  <option value="bn">🇧🇩 বাংলা</option>
+  <option value="np">🇳🇵 नेपाली</option>
+</select>
 <h1 style={{ fontSize: "36px", marginBottom: "10px" }}>
-🍜 Foreign Food Points System </h1>
+🍜 {translations[language].title} </h1>
 
 
   <p style={{ fontSize: "18px", color: "#555" }}>
-    QR-Based Customer Loyalty Platform
+     {translations[language].subtitle}
   </p>
 
   <div
