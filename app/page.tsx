@@ -44,6 +44,7 @@ const [totalPoints, setTotalPoints] = useState(0);
 const [unusedCoupons, setUnusedCoupons] = useState(0);
 const [todayScans, setTodayScans] = useState(0);
 const [recentLogs, setRecentLogs] = useState<any[]>([]);
+const [topMembers, setTopMembers] = useState<any[]>([]);
 
 useEffect(() => {
 loadStats();
@@ -102,6 +103,13 @@ const { data: recent } = await supabase
   .limit(5);
 
 setRecentLogs(recent || []);
+const { data: top } = await supabase
+  .from("customers")
+  .select("*")
+  .order("points", { ascending: false })
+  .limit(5);
+
+setTopMembers(top || []);
 
 
 };
@@ -235,6 +243,28 @@ background: "#f5f7fa",
   }}
 >
   <h3>📋 Recent Activity</h3>
+  <div
+  style={{
+    marginTop: "40px",
+    padding: "20px",
+    background: "white",
+    borderRadius: "12px",
+  }}
+>
+  <h3>🏆 Top Members</h3>
+
+  {topMembers.map((member, index) => (
+    <div
+      key={member.id}
+      style={{
+        padding: "10px",
+        borderBottom: "1px solid #eee",
+      }}
+    >
+      #{index + 1} {member.name} — {member.points} pts
+    </div>
+  ))}
+</div>
 
   {recentLogs.length === 0 ? (
     <p>No activity found</p>
