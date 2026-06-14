@@ -170,8 +170,7 @@ return (
   </p>
 </div>
 
-  <p>Active Coupons: {couponCount}</p>
-  <p>Used Coupons: {usedCouponCount}</p>
+  
 
   <hr />
 
