@@ -58,15 +58,15 @@ setVisits(visitData || []);
 };
 
 if (!customer) {
-return (
-<div
-  style={{
-    minHeight: "100vh",
-    background: "#f5f7fa",
-    padding: "20px",
-  }}
->Loading...</div>;
+  return (
+    <div style={{ padding: 20 }}>
+      Loading...
+    </div>
+  );
 }
+
+
+
 
 const points = customer.points || 0;
 
