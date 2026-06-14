@@ -45,6 +45,7 @@ const [unusedCoupons, setUnusedCoupons] = useState(0);
 const [todayScans, setTodayScans] = useState(0);
 const [recentLogs, setRecentLogs] = useState<any[]>([]);
 const [topMembers, setTopMembers] = useState<any[]>([]);
+const [chartData, setChartData] = useState<any[]>([]);
 
 useEffect(() => {
 loadStats();
@@ -110,18 +111,35 @@ const { data: top } = await supabase
   .limit(5);
 
 setTopMembers(top || []);
+const { data: scanLogs } = await supabase
+  .from("scan_logs")
+  .select("created_at");
+
+const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+const weeklyData = days.map((day) => ({
+  day,
+  scans: 0,
+}));
+
+scanLogs?.forEach((log) => {
+  const d = new Date(log.created_at);
+  const dayName = days[d.getDay()];
+
+  const target = weeklyData.find(
+    (x) => x.day === dayName
+  );
+
+  if (target) {
+    target.scans += 1;
+  }
+});
+
+setChartData(weeklyData);
 
 
 };
-const chartData = [
-  { day: "Mon", scans: 12 },
-  { day: "Tue", scans: 18 },
-  { day: "Wed", scans: 8 },
-  { day: "Thu", scans: 20 },
-  { day: "Fri", scans: 15 },
-  { day: "Sat", scans: 25 },
-  { day: "Sun", scans: 10 },
-];
+
 
 return (
 <div
