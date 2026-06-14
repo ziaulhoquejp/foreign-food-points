@@ -51,7 +51,22 @@ if (updateError) {
   return;
 }
 
-if (newPoints >= 500) {
+const couponTarget =
+  Math.floor(newPoints / 500);
+
+const { count: couponCount } =
+  await supabase
+    .from("coupons")
+    .select("*", {
+      count: "exact",
+      head: true,
+    })
+    .eq("member_no", memberNo);
+
+if (
+  couponTarget >
+  (couponCount || 0)
+) {
   await supabase
     .from("coupons")
     .insert([
@@ -61,9 +76,14 @@ if (newPoints >= 500) {
       },
     ]);
 
-  alert("🎉 500 Points Reached! Coupon Issued!");
+  alert(
+    "🎉 New Coupon Issued!"
+  );
 } else {
-  alert("Points Added. Total: " + newPoints);
+  alert(
+    "Points Added. Total: " +
+      newPoints
+  );
 }
 
 await loadMembers();
