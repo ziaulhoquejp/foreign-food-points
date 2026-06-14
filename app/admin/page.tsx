@@ -46,7 +46,7 @@ return (
       background: "#f5f7fa",
       padding: "20px",
     }}
-  > <h1>👤 Member Profile</h1>
+  > <h1>🚀 NEW MEMBER PROFILE</h1>
 
 
   <div
