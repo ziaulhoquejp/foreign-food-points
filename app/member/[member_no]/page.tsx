@@ -58,7 +58,14 @@ setVisits(visitData || []);
 };
 
 if (!customer) {
-return <div style={{ padding: 20 }}>Loading...</div>;
+return (
+<div
+  style={{
+    minHeight: "100vh",
+    background: "#f5f7fa",
+    padding: "20px",
+  }}
+>Loading...</div>;
 }
 
 const points = customer.points || 0;
@@ -83,30 +90,85 @@ return (
 <div style={{ padding: 20 }}> <h1>Member Page</h1>
 
 
-  <h2>Member No: {customer.member_no}</h2>
+  <div
+  style={{
+    background:
+      "linear-gradient(135deg,#1e3a8a,#2563eb)",
+    color: "white",
+    padding: "25px",
+    borderRadius: "16px",
+    marginBottom: "20px",
+  }}
+>
+  <h2>{customer.name}</h2>
 
-  <p>Name: {customer.name}</p>
-  <p>Email: {customer.email}</p>
+  <p>
+    Member No: {customer.member_no}
+  </p>
+
+  <p>{customer.email}</p>
+
+  <h1
+    style={{
+      fontSize: "48px",
+      margin: "10px 0",
+    }}
+  >
+    ⭐ {points}
+  </h1>
+
+  <p>{rank} Member</p>
+</div>
 
   <hr />
 
-  <h3>Member Status</h3>
+  <div
+  style={{
+    background: "white",
+    padding: "20px",
+    borderRadius: "12px",
+    marginBottom: "20px",
+  }}
+>
+  <h3>🏆 Member Status</h3>
 
   <p>Rank: {rank}</p>
-  <p>Points: {points}</p>
+
   <p>Total Visits: {visits.length}</p>
 
   <p>
-    Next Coupon Target: {nextCouponTarget}
+    Next Coupon Target:
+    {nextCouponTarget}
   </p>
 
   <p>
-    Remaining Points: {remainingPoints}
+    Remaining Points:
+    {remainingPoints}
   </p>
+</div>
 
   <hr />
 
-  <h3>Coupons</h3>
+  <div
+  style={{
+    background: "white",
+    padding: "20px",
+    borderRadius: "12px",
+    marginBottom: "20px",
+  }}
+>
+  <h3>🎁 Coupons</h3>
+
+  <p>
+    Active Coupons:
+    {couponCount}
+  </p>
+
+  <p>
+    Used Coupons:
+    {usedCouponCount}
+  </p>
+</div>
 
   <p>Active Coupons: {couponCount}</p>
   <p>Used Coupons: {usedCouponCount}</p>
