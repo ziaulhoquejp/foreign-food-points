@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { QRCodeCanvas } from "qrcode.react";
 
 export default function MemberPage({
 params,
@@ -36,17 +37,22 @@ setCoupons(couponData || []);
 };
 
 if (!member) {
-return <div style={{ padding: 20 }}>Loading...</div>;
+return (
+<div style={{ padding: 20 }}>
+Loading... </div>
+);
 }
 
+const qrValue = `${window.location.origin}/member/${member.member_no}`;
+
 return (
-  <div
-    style={{
-      minHeight: "100vh",
-      background: "#f5f7fa",
-      padding: "20px",
-    }}
-  > <h1>🚀 NEW MEMBER PROFILE</h1>
+<div
+style={{
+minHeight: "100vh",
+background: "#f5f7fa",
+padding: "20px",
+}}
+> <h1>👤 Member Profile</h1>
 
 
   <div
@@ -58,32 +64,59 @@ return (
     }}
   >
     <div
-  style={{
-    background: "linear-gradient(135deg,#1e3a8a,#2563eb)",
-    color: "white",
-    padding: "25px",
-    borderRadius: "16px",
-  }}
->
-  <h2 style={{ margin: 0 }}>
-    {member.name}
-  </h2>
+      style={{
+        background:
+          "linear-gradient(135deg,#1e3a8a,#2563eb)",
+        color: "white",
+        padding: "25px",
+        borderRadius: "16px",
+      }}
+    >
+      <h2 style={{ margin: 0 }}>
+        {member.name}
+      </h2>
 
-  <p>
-    Member No: {member.member_no}
-  </p>
+      <p>
+        Member No: {member.member_no}
+      </p>
 
-  <h1
+      <h1
+        style={{
+          fontSize: "48px",
+          margin: "10px 0",
+        }}
+      >
+        ⭐ {member.points}
+      </h1>
+
+      <p>Current Points</p>
+    </div>
+  </div>
+
+  <div
     style={{
-      fontSize: "48px",
-      margin: "10px 0",
+      background: "white",
+      padding: "20px",
+      borderRadius: "12px",
+      marginTop: "20px",
+      textAlign: "center",
     }}
   >
-    ⭐ {member.points}
-  </h1>
+    <h2>📱 Membership QR Code</h2>
 
-  <p>Current Points</p>
-</div>
+    <QRCodeCanvas
+      value={qrValue}
+      size={220}
+    />
+
+    <p
+      style={{
+        marginTop: "15px",
+        color: "#666",
+      }}
+    >
+      Show this QR code when visiting the store
+    </p>
   </div>
 
   <div
@@ -101,25 +134,23 @@ return (
     ) : (
       coupons.map((coupon) => (
         <div
-  key={coupon.id}
-  style={{
-    padding: "15px",
-    marginBottom: "10px",
-    borderRadius: "10px",
-    background: coupon.used
-      ? "#e5e7eb"
-      : "#dcfce7",
-  }}
->
-  🎁 Coupon #{coupon.id}
-
-  <br />
-
-  Status:
-  {coupon.used
-    ? " Used"
-    : " Available"}
-</div>
+          key={coupon.id}
+          style={{
+            padding: "15px",
+            marginBottom: "10px",
+            borderRadius: "10px",
+            background: coupon.used
+              ? "#e5e7eb"
+              : "#dcfce7",
+          }}
+        >
+          🎁 Coupon #{coupon.id}
+          <br />
+          Status:
+          {coupon.used
+            ? " Used"
+            : " Available"}
+        </div>
       ))
     )}
   </div>
