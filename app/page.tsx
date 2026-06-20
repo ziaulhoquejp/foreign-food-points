@@ -1,7 +1,6 @@
 "use client";
 
-"use client";
-
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -15,8 +14,10 @@ import {
 } from "recharts";
 
 export default function HomePage() {
+  const router = useRouter();
+
   const [language, setLanguage] =
-  useState<"en" | "ja" | "bn" | "np">("en");
+    useState<"en" | "ja" | "bn" | "np">("en");
 
   const translations = {
     en: {
@@ -50,6 +51,10 @@ const [chartData, setChartData] = useState<any[]>([]);
 useEffect(() => {
 loadStats();
 }, []);
+const handleLogout = async () => {
+  await supabase.auth.signOut();
+  router.push("/login");
+};
 
 const loadStats = async () => {
 const { count: members } = await supabase
@@ -162,8 +167,33 @@ background: "#f5f7fa",
   <option value="bn">🇧🇩 বাংলা</option>
   <option value="np">🇳🇵 नेपाली</option>
 </select>
-<h1 style={{ fontSize: "36px", marginBottom: "10px" }}>
-🍜 {translations[language].title} </h1>
+<div
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "20px",
+  }}
+>
+  <h1 style={{ fontSize: "36px", margin: 0 }}>
+    🍜 {translations[language].title}
+  </h1>
+
+  <button
+    onClick={handleLogout}
+    style={{
+      background: "#dc2626",
+      color: "white",
+      border: "none",
+      padding: "10px 16px",
+      borderRadius: "8px",
+      cursor: "pointer",
+      fontWeight: "bold",
+    }}
+  >
+    🚪 Logout
+  </button>
+</div>
 
 
   <p style={{ fontSize: "18px", color: "#555" }}>

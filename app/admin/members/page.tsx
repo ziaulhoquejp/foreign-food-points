@@ -3,11 +3,18 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 
 export default function MembersPage() {
 const [members, setMembers] = useState<any[]>([]);
 const [searchTerm, setSearchTerm] = useState("");
+const router = useRouter();
 
+const handleLogout = async () => {
+  await supabase.auth.signOut();
+  router.push("/login");
+};
 useEffect(() => {
 loadMembers();
 }, []);
@@ -170,7 +177,30 @@ URL.revokeObjectURL(url);
 };
 
 return (
-<div style={{ padding: 20 }}> <h1>Member List</h1>
+<div style={{ padding: 20 }}> <div
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "20px",
+  }}
+>
+  <h1>Member List</h1>
+
+  <button
+    onClick={handleLogout}
+    style={{
+      background: "#dc2626",
+      color: "white",
+      border: "none",
+      padding: "10px 16px",
+      borderRadius: "8px",
+      cursor: "pointer",
+    }}
+  >
+    Logout
+  </button>
+</div>
 
 
   <div style={{ marginBottom: "20px" }}>

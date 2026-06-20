@@ -20,7 +20,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/scan");
+    router.push("/admin");
   };
 
   return (

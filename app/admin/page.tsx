@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { QRCodeCanvas } from "qrcode.react";
+import { useParams } from "next/navigation";
 
 export default function MemberPage({
 params,
@@ -11,6 +12,8 @@ params: { member_no: string };
 }) {
 const [member, setMember] = useState<any>(null);
 const [coupons, setCoupons] = useState<any[]>([]);
+const routeParams = useParams();
+const memberNo = routeParams.member_no as string;
 
 useEffect(() => {
 loadMember();
@@ -20,7 +23,7 @@ const loadMember = async () => {
 const { data: customer } = await supabase
 .from("customers")
 .select("*")
-.eq("member_no", params.member_no)
+.eq("member_no", memberNo)
 .single();
 
 
@@ -29,7 +32,7 @@ setMember(customer);
 const { data: couponData } = await supabase
   .from("coupons")
   .select("*")
-  .eq("member_no", params.member_no);
+  .eq("member_no", memberNo);
 
 setCoupons(couponData || []);
 
@@ -43,7 +46,11 @@ Loading... </div>
 );
 }
 
-const qrValue = `${window.location.origin}/member/${member.member_no}`;
+const [origin, setOrigin] = useState("");
+
+useEffect(() => {
+  setOrigin(window.location.origin);
+}, []);
 
 return (
 <div
@@ -102,21 +109,6 @@ padding: "20px",
       textAlign: "center",
     }}
   >
-    <h2>📱 Membership QR Code</h2>
-
-    <QRCodeCanvas
-      value={qrValue}
-      size={220}
-    />
-
-    <p
-      style={{
-        marginTop: "15px",
-        color: "#666",
-      }}
-    >
-      Show this QR code when visiting the store
-    </p>
   </div>
 
   <div
