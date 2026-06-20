@@ -7,8 +7,7 @@ import { supabase } from "@/lib/supabase";
 export default function ScanPage() {
 const [message, setMessage] = useState("");
 const [isProcessing, setIsProcessing] = useState(false);
-let successSound: HTMLAudioElement | null =
-  null;
+
 
 useEffect(() => {
 const scanner = new Html5QrcodeScanner(
@@ -110,7 +109,7 @@ scanner.render(
           `🎉 Coupon Issued! Current Points: ${newPoints}`
         );
       } else {
-        successSound?.play();
+        
         setMessage(
           `✅ ${customer.name} +10 Points! Current: ${newPoints}`
         );
