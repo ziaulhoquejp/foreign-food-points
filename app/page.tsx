@@ -1,8 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   LineChart,
@@ -16,375 +16,150 @@ import {
 export default function HomePage() {
   const router = useRouter();
 
-  const [language, setLanguage] =
-    useState<"en" | "ja" | "bn" | "np">("en");
+  const [language, setLanguage] = useState<"en" | "ja" | "bn" | "np">("en");
+  const [loading, setLoading] = useState(true);
+
+  const [memberCount, setMemberCount] = useState(0);
+  const [couponCount, setCouponCount] = useState(0);
+  const [scanCount, setScanCount] = useState(0);
+  const [totalPoints, setTotalPoints] = useState(0);
+  const [unusedCoupons, setUnusedCoupons] = useState(0);
+  const [todayScans, setTodayScans] = useState(0);
+  const [recentLogs, setRecentLogs] = useState<any[]>([]);
+  const [topMembers, setTopMembers] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<any[]>([]);
 
   const translations = {
-    en: {
-      title: "Foreign Food Points System",
-      subtitle: "QR-Based Customer Loyalty Platform",
-    },
-    ja: {
-      title: "外国人向けポイントシステム",
-      subtitle: "QR会員ポイント管理プラットフォーム",
-    },
-    bn: {
-      title: "বিদেশি খাদ্য পয়েন্ট সিস্টেম",
-      subtitle: "QR ভিত্তিক কাস্টমার লয়্যালটি প্ল্যাটফর্ম",
-    },
-    np: {
-      title: "विदेशी फूड पोइन्ट प्रणाली",
-      subtitle: "QR आधारित ग्राहक लोयल्टी प्लेटफर्म",
-    },
+    en: { title: "Foreign Food Points System", subtitle: "QR Platform" },
+    ja: { title: "ポイント管理システム", subtitle: "QR管理" },
+    bn: { title: "পয়েন্ট সিস্টেম", subtitle: "QR প্ল্যাটফর্ম" },
+    np: { title: "पोइन्ट सिस्टम", subtitle: "QR सिस्टम" },
   };
 
-const [memberCount, setMemberCount] = useState(0);
-const [couponCount, setCouponCount] = useState(0);
-const [scanCount, setScanCount] = useState(0);
-const [totalPoints, setTotalPoints] = useState(0);
-const [unusedCoupons, setUnusedCoupons] = useState(0);
-const [todayScans, setTodayScans] = useState(0);
-const [recentLogs, setRecentLogs] = useState<any[]>([]);
-const [topMembers, setTopMembers] = useState<any[]>([]);
-const [chartData, setChartData] = useState<any[]>([]);
+  useEffect(() => {
+    loadStats();
+  }, []);
 
-useEffect(() => {
-loadStats();
-}, []);
-const handleLogout = async () => {
-  await supabase.auth.signOut();
-  router.push("/login");
-};
+  const loadStats = async () => {
+    try {
+      setLoading(true);
 
-const loadStats = async () => {
-const { count: members } = await supabase
-.from("customers")
-.select("*", { count: "exact", head: true });
+      const { count: members } = await supabase
+        .from("customers")
+        .select("*", { count: "exact", head: true });
 
+      const { count: coupons } = await supabase
+        .from("coupons")
+        .select("*", { count: "exact", head: true });
 
-const { count: coupons } = await supabase
-  .from("coupons")
-  .select("*", { count: "exact", head: true });
+      const { count: scans } = await supabase
+        .from("scan_logs")
+        .select("*", { count: "exact", head: true });
 
-const { count: scans } = await supabase
-  .from("scan_logs")
-  .select("*", { count: "exact", head: true });
+      const { data: pointsData } = await supabase
+        .from("customers")
+        .select("points");
 
-// Total Points
-const { data: pointsData } = await supabase
-  .from("customers")
-  .select("points");
+      const total =
+        pointsData?.reduce((sum, r) => sum + (r.points || 0), 0) || 0;
 
-// Unused Coupons
-const { count: unused } = await supabase
-  .from("coupons")
-  .select("*", { count: "exact", head: true })
-  .eq("used", false);
+      const { count: unused } = await supabase
+        .from("coupons")
+        .select("*", { count: "exact", head: true })
+        .eq("used", false);
 
-// Today's Scans
-const today = new Date();
-today.setHours(0, 0, 0, 0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-const { count: todayCount } = await supabase
-  .from("scan_logs")
-  .select("*", { count: "exact", head: true })
-  .gte("created_at", today.toISOString());
+      const { count: todayCount } = await supabase
+        .from("scan_logs")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", today.toISOString());
 
-const total =
-  pointsData?.reduce(
-    (sum, row) => sum + (row.points || 0),
-    0
-  ) || 0;
+      setMemberCount(members || 0);
+      setCouponCount(coupons || 0);
+      setScanCount(scans || 0);
+      setTotalPoints(total);
+      setUnusedCoupons(unused || 0);
+      setTodayScans(todayCount || 0);
 
-setTotalPoints(total);
-setUnusedCoupons(unused || 0);
-setTodayScans(todayCount || 0);
-setMemberCount(members || 0);
-setCouponCount(coupons || 0);
-setScanCount(scans || 0);
-const { data: recent } = await supabase
-  .from("scan_logs")
-  .select("*")
-  .order("created_at", { ascending: false })
-  .limit(5);
+      const { data: recent } = await supabase
+        .from("scan_logs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(5);
 
-setRecentLogs(recent || []);
-const { data: top } = await supabase
-  .from("customers")
-  .select("*")
-  .order("points", { ascending: false })
-  .limit(5);
+      setRecentLogs(recent || []);
 
-setTopMembers(top || []);
-const { data: scanLogs } = await supabase
-  .from("scan_logs")
-  .select("created_at");
+      const { data: top } = await supabase
+        .from("customers")
+        .select("*")
+        .order("points", { ascending: false })
+        .limit(5);
 
-const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      setTopMembers(top || []);
 
-const weeklyData = days.map((day) => ({
-  day,
-  scans: 0,
-}));
+      const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      const weekly = days.map(d => ({ day: d, scans: 0 }));
 
-scanLogs?.forEach((log) => {
-  const d = new Date(log.created_at);
-  const dayName = days[d.getDay()];
+      const { data: logs } = await supabase
+        .from("scan_logs")
+        .select("created_at");
 
-  const target = weeklyData.find(
-    (x) => x.day === dayName
-  );
+      logs?.forEach(l => {
+        const d = new Date(l.created_at);
+        const day = days[d.getDay()];
+        const target = weekly.find(x => x.day === day);
+        if (target) target.scans++;
+      });
 
-  if (target) {
-    target.scans += 1;
+      setChartData(weekly);
+
+    } catch (error) {
+      console.error("LOAD ERROR:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
+
+  if (loading) {
+    return <div style={{ padding: 40 }}>Loading...</div>;
   }
-});
 
-setChartData(weeklyData);
+  return (
+    <div style={{ padding: 40, background: "#f5f7fa", minHeight: "100vh" }}>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <h1>🍜 {translations[language].title}</h1>
 
+        <button onClick={handleLogout}>
+          Logout
+        </button>
+      </div>
 
-};
+      <p>{translations[language].subtitle}</p>
 
+      <div style={{ display: "grid", gap: 10, marginTop: 20 }}>
+        <div>Members: {memberCount}</div>
+        <div>Coupons: {couponCount}</div>
+        <div>Scans: {scanCount}</div>
+        <div>Total Points: {totalPoints}</div>
+      </div>
 
-return (
-<div
-style={{
-minHeight: "100vh",
-padding: "40px",
-background: "#f5f7fa",
-}}
->
-  <select
-  value={language}
-  onChange={(e) =>
-  setLanguage(
-    e.target.value as "en" | "ja" | "bn" | "np"
-  )
+      <div style={{ height: 300, marginTop: 30 }}>
+        <ResponsiveContainer>
+          <LineChart data={chartData}>
+            <XAxis dataKey="day" />
+            <YAxis />
+            <Tooltip />
+            <Line type="monotone" dataKey="scans" />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
 }
->
-  <option value="en">🇺🇸 English</option>
-  <option value="ja">🇯🇵 Japanese</option>
-  <option value="bn">🇧🇩 বাংলা</option>
-  <option value="np">🇳🇵 नेपाली</option>
-</select>
-<div
-  style={{
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "20px",
-  }}
->
-  <h1 style={{ fontSize: "36px", margin: 0 }}>
-    🍜 {translations[language].title}
-  </h1>
-
-  <button
-    onClick={handleLogout}
-    style={{
-      background: "#dc2626",
-      color: "white",
-      border: "none",
-      padding: "10px 16px",
-      borderRadius: "8px",
-      cursor: "pointer",
-      fontWeight: "bold",
-    }}
-  >
-    🚪 Logout
-  </button>
-</div>
-
-
-  <p style={{ fontSize: "18px", color: "#555" }}>
-     {translations[language].subtitle}
-  </p>
-
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-      gap: "20px",
-      marginTop: "30px",
-    }}
-  >
-    <div style={statsCard}>
-      <h3>👥 Members</h3>
-      <h1>{memberCount}</h1>
-    </div>
-
-    <div style={statsCard}>
-      <h3>🎁 Coupons</h3>
-      <h1>{couponCount}</h1>
-    </div>
-
-    <div style={statsCard}>
-      <h3>📊 Scan Records</h3>
-      <h1>{scanCount}</h1>
-    </div>
-    <div style={statsCard}>
-  <h3>⭐ Total Points</h3>
-  <h1>{totalPoints}</h1>
-</div>
-
-<div style={statsCard}>
-  <h3>🎫 Unused Coupons</h3>
-  <h1>{unusedCoupons}</h1>
-</div>
-
-<div style={statsCard}>
-  <h3>🔥 Today's Scans</h3>
-  <h1>{todayScans}</h1>
-</div>
-  </div>
-
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-      gap: "20px",
-      marginTop: "40px",
-    }}
-  >
-    <Link href="/admin/members">
-      <div style={cardStyle}>
-        <h2>👥 Members</h2>
-        <p>Manage registered customers</p>
-      </div>
-    </Link>
-
-    <Link href="/scan">
-      <div style={cardStyle}>
-        <h2>📱 QR Scan</h2>
-        <p>Add points by scanning QR codes</p>
-      </div>
-    </Link>
-
-    <Link href="/coupon-use">
-      <div style={cardStyle}>
-        <h2>🎁 Coupons</h2>
-        <p>Redeem customer coupons</p>
-      </div>
-    </Link>
-
-    <Link href="/history">
-      <div style={cardStyle}>
-        <h2>📊 History</h2>
-        <p>View scan activity logs</p>
-      </div>
-    </Link>
-  </div>
-
-  <div
-    style={{
-      marginTop: "50px",
-      padding: "20px",
-      background: "white",
-      borderRadius: "12px",
-    }}
-  ><div
-  style={{
-    marginTop: "40px",
-    padding: "20px",
-    background: "white",
-    borderRadius: "12px",
-  }}
->
-  <h3>📋 Recent Activity</h3>
-  <div
-  style={{
-    marginTop: "40px",
-    padding: "20px",
-    background: "white",
-    borderRadius: "12px",
-  }}
->
-  <h3>🏆 Top Members</h3>
-
-  {topMembers.map((member, index) => (
-    <div
-      key={member.id}
-      style={{
-        padding: "10px",
-        borderBottom: "1px solid #eee",
-      }}
-    >
-      #{index + 1} {member.name} — {member.points} pts
-    </div>
-  ))}
-</div>
-
-  {recentLogs.length === 0 ? (
-    <p>No activity found</p>
-  ) : (
-    recentLogs.map((log) => (
-      <div
-        key={log.id}
-        style={{
-          padding: "10px",
-          borderBottom: "1px solid #eee",
-        }}
-      >
-        Member {log.member_no} +{log.points_added} points
-      </div>
-    ))
-  )}
-</div>
-<div
-  style={{
-    marginTop: "40px",
-    background: "white",
-    padding: "20px",
-    borderRadius: "12px",
-  }}
->
-  <h2>📈 Weekly Scan Activity</h2>
-
-  <div style={{ width: "100%", height: 300 }}>
-    <ResponsiveContainer>
-      <LineChart data={chartData}>
-        <XAxis dataKey="day" />
-        <YAxis />
-        <Tooltip />
-        <Line
-          type="monotone"
-          dataKey="scans"
-        />
-      </LineChart>
-    </ResponsiveContainer>
-  </div>
-</div>
-    <h3>System Overview</h3>
-
-    <ul>
-      <li>Customer Registration</li>
-      <li>QR Code Membership System</li>
-      <li>Point Collection</li>
-      <li>Automatic Coupon Issuance</li>
-      <li>Coupon Redemption</li>
-      <li>Scan History Tracking</li>
-      <li>Supabase Database</li>
-      <li>GitHub + Vercel Deployment</li>
-    </ul>
-  </div>
-</div>
-
-
-);
-}
-
-const cardStyle = {
-background: "white",
-padding: "20px",
-borderRadius: "12px",
-boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-cursor: "pointer",
-};
-
-const statsCard = {
-background: "#ffffff",
-padding: "20px",
-borderRadius: "12px",
-textAlign: "center" as const,
-boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-};
