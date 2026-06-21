@@ -21,6 +21,7 @@ export default function ScanPage() {
       setIsProcessing(true);
 
       try {
+        const url = new URL(decodedText);
         const parts = url.pathname.split("/");
 const last = parts[parts.length - 1];
 
